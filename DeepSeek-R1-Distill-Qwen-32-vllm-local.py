@@ -33,7 +33,7 @@ texts = [
 # 初始化 vLLM 模型（GPU 会自动使用）
 llm = LLM(
     model=model_dir,
-    tensor_parallel_size=2,  # 有多卡可以设为 2、4、8...
+    tensor_parallel_size=8,  # 有多卡可以设为 2、4、8...
     # device="cuda",
 )
 
