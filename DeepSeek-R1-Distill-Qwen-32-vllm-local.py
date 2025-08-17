@@ -7,7 +7,7 @@ import re
 # os.environ['VLLM_TARGET_DEVICE'] = 'cpu'
 
 # 模型路径（本地）
-model_dir = '/home/jin/MoE/vLLM/model/DeepSeek-R1-Distill-Qwen-32B'
+model_dir = ' /home/admin/resource/model/464482ce.qwen3-235b-922b/256k-0723-thinking-fp4'
 
 # 初始化 tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_dir, local_files_only=True)
