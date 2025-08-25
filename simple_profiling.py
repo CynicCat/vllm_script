@@ -22,7 +22,11 @@ sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
 
 def main():
     # Create an LLM.
-    llm = LLM(model="Qwen/Qwen3-4B-Thinking-2507", max_model_len=65536, tensor_parallel_size=1)
+    llm = LLM(model="Qwen/Qwen3-4B-Thinking-2507", 
+              max_model_len=131072, 
+              tensor_parallel_size=8,
+              enable_expert_parallel=True,
+             )
 
     llm.start_profile()
 
