@@ -218,6 +218,56 @@ class Qwen72BModelConfig(QwenModelConfig):
 
 
 @dataclass
+class Qwen3Moe30BModelConfig(BaseModelConfig):
+    num_layers: int = 48
+    num_q_heads: int = 32
+    num_kv_heads: int = 4
+    embedding_dim: int = 2048
+    mlp_hidden_dim: int = 6144
+    max_position_embeddings: int = 40960
+    use_gated_mlp: bool = True
+    use_bias: bool = False
+    use_qkv_bias: bool = False
+    activation: ActivationType = ActivationType.SILU
+    norm: NormType = NormType.RMS_NORM
+    post_attn_norm: bool = True
+    vocab_size: int = 151936
+    rope_theta: Optional[float] = 1000000.0
+    moe_num_experts: Optional[int] = 128
+    moe_top_k: Optional[int] = 8
+    moe_intermediate_dim: Optional[int] = 768
+
+    @staticmethod
+    def get_name():
+        return "Qwen/Qwen3-30B-A3B"
+
+
+@dataclass
+class Qwen3Moe235BModelConfig(BaseModelConfig):
+    num_layers: int = 94
+    num_q_heads: int = 64
+    num_kv_heads: int = 4
+    embedding_dim: int = 4096
+    mlp_hidden_dim: int = 12288
+    max_position_embeddings: int = 40960
+    use_gated_mlp: bool = True
+    use_bias: bool = False
+    use_qkv_bias: bool = False
+    activation: ActivationType = ActivationType.SILU
+    norm: NormType = NormType.RMS_NORM
+    post_attn_norm: bool = True
+    vocab_size: int = 151936
+    rope_theta: Optional[float] = 1000000.0
+    moe_num_experts: Optional[int] = 128
+    moe_top_k: Optional[int] = 8
+    moe_intermediate_dim: Optional[int] = 1536
+
+    @staticmethod
+    def get_name():
+        return "Qwen/Qwen3-235B-A22B"
+
+
+@dataclass
 class Mixtral8x7BModelConfig(Llama2ModelConfig):
     num_layers: int = 32
     num_q_heads: int = 32

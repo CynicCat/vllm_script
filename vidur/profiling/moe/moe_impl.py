@@ -44,7 +44,7 @@ class MoEFeedForward(torch.nn.Module):
             top_k=config.moe_top_k,
             hidden_size=self.hidden_size,
             intermediate_size=config.moe_intermediate_dim,
-            reduce_results=True,
+            reduce_results=False,
             renormalize=True,
             linear_metric_name="moe_linear",
             communication_metric_name="moe_all_reduce",

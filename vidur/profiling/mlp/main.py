@@ -83,47 +83,71 @@ def profile_model(
 ):
     model_config = ModelConfig.from_model_name(model)
 
+    use_ray = not args.disable_ray
+
     promises = []
     all_results = []
 
-    model_wrapper_actor = ray.remote(
-        num_cpus=1,
-        num_gpus=1,
-    )(
-        MlpWrapper,
-    ).options(runtime_env={"env_vars": {"KINETO_LOG_LEVEL": "5"}})
+    if use_ray:
+        model_wrapper_actor = ray.remote(
+            num_cpus=1,
+            num_gpus=1,
+        )(
+            MlpWrapper,
+        ).options(runtime_env={"env_vars": {"KINETO_LOG_LEVEL": "5"}})
 
     for num_tensor_parallel_workers in args.num_tensor_parallel_workers:
         if model_config.no_tensor_parallel and num_tensor_parallel_workers > 1:
             pbar.update(len(num_tokens_to_profile))
             continue
 
-        model_wrappers = [
-            model_wrapper_actor.remote(
-                model_config,
-                num_tensor_parallel_workers,
-                args.profile_method,
-                rank,
-                args.output_dir,
-            )
-            for rank in range(args.num_gpus)
-        ]
-        for num_tokens in num_tokens_to_profile:
-            worker_id = len(promises)
-            promise = model_wrappers[worker_id].profile.remote(
-                num_tokens,
-            )
-            promises.append(promise)
+        if not use_ray and num_tensor_parallel_workers > 1:
+            pbar.update(len(num_tokens_to_profile))
+            continue
 
-            if len(promises) >= args.num_gpus:
-                results = ray.get(promises)
-                all_results.extend(results)
-                promises = []
+        if use_ray:
+            model_wrappers = [
+                model_wrapper_actor.remote(
+                    model_config,
+                    num_tensor_parallel_workers,
+                    args.profile_method,
+                    rank,
+                    args.output_dir,
+                )
+                for rank in range(args.num_gpus)
+            ]
+        else:
+            model_wrappers = [
+                MlpWrapper(
+                    model_config,
+                    num_tensor_parallel_workers,
+                    args.profile_method,
+                    rank=0,
+                    output_dir=args.output_dir,
+                )
+            ]
+
+        for num_tokens in num_tokens_to_profile:
+            if use_ray:
+                worker_id = len(promises)
+                promise = model_wrappers[worker_id].profile.remote(
+                    num_tokens,
+                )
+                promises.append(promise)
+
+                if len(promises) >= args.num_gpus:
+                    results = ray.get(promises)
+                    all_results.extend(results)
+                    promises = []
+            else:
+                result = model_wrappers[0].profile(num_tokens)
+                all_results.append(result)
 
             pbar.update(1)
 
-    results = ray.get(promises)
-    all_results.extend(results)
+    if use_ray and promises:
+        results = ray.get(promises)
+        all_results.extend(results)
 
     df = pd.DataFrame(all_results)
     # the time_stats column is a dict, so we need to expand it into columns recursively and add prefix

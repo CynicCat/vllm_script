@@ -8,6 +8,12 @@ from vidur.profiling.common.cuda_timer import CudaTimer
 # monkey patching the CudaTimer class to use the sarathi implementation
 sarathi.metrics.cuda_timer.CudaTimer = CudaTimer
 
+from sarathi.model_executor.parallel_utils.parallel_state import (
+    set_pipeline_model_parallel_rank,
+    set_pipeline_model_parallel_world_size,
+    set_tensor_model_parallel_rank,
+    set_tensor_model_parallel_world_size,
+)
 from sarathi.model_executor.weight_utils import initialize_dummy_weights
 
 from vidur.profiling.common.model_config import ModelConfig
@@ -56,6 +62,13 @@ class MoeWrapper:
         self.rank = rank
         self.output_dir = output_dir
         os.makedirs(f"{self.output_dir}/profiler_traces/", exist_ok=True)
+
+        # Configure Sarathi's tensor/pipeline parallel globals so fused MoE kernels
+        # can infer sizes without initializing a distributed process group.
+        set_tensor_model_parallel_world_size(self.num_tensor_parallel_workers)
+        set_tensor_model_parallel_rank(0)
+        set_pipeline_model_parallel_world_size(1)
+        set_pipeline_model_parallel_rank(0)
 
         repeat_steps = (
             ACTIVE_STEPS if self.profile_method == ProfileMethod.RECORD_FUNCTION.value else 1
