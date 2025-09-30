@@ -1,0 +1,9 @@
+disable_ray: false
+max_tokens: 4096
+models:
+- mistralai/Mixtral-8x7B-Instruct-v0.1
+num_gpus: 8
+num_tensor_parallel_workers:
+- 1
+output_dir: profiling_outputs/moe/2025-09-29_20-25-53
+profile_method: record_function

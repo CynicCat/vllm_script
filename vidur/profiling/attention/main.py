@@ -26,7 +26,7 @@ def parse_args():
     parser.add_argument(
         "--num_gpus",
         type=int,
-        default=8,
+        default=1,
         help="Number of GPUs to use for profiling",
     )
     parser.add_argument(
@@ -40,12 +40,7 @@ def parse_args():
         type=str,
         nargs="+",
         default=[
-            "microsoft/phi-2",
-            "internlm/internlm-20b",
-            "Qwen/Qwen-72B",
-            "meta-llama/Llama-2-7b-hf",
-            "codellama/CodeLlama-34b-Instruct-hf",
-            "meta-llama/Llama-2-70b-hf",
+            "Qwen/Qwen3-30B-A3B",
         ],
         help="Models to profile",
     )
@@ -53,7 +48,7 @@ def parse_args():
         "--num_tensor_parallel_workers",
         type=int,
         nargs="+",
-        default=[1, 2, 4, 8],
+        default=[1],
         help="Number of tensor parallel workers to profile",
     )
     parser.add_argument(
@@ -101,6 +96,12 @@ def parse_args():
         type=int,
         default=16,
         help="Block size for paged attention",
+    )
+    parser.add_argument(
+        "--max_pipeline_parallel_size",
+        type=int,
+        default=8,
+        help="Maximum pipeline parallel size (default: 8)",
     )
     args = parser.parse_args()
 
@@ -201,6 +202,8 @@ def main():
                 ),
                 args.block_size,
                 dtype,
+                gpu_memory_utilization=0.9,
+                max_pipeline_parallel_size=args.max_pipeline_parallel_size,
             )
             max_num_blocks_dict[(model, num_tensor_parallel_workers)] = max_num_blocks
             total_combos[(model, num_tensor_parallel_workers)] = list(

@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "--num_gpus",
         type=int,
-        default=8,
+        default=1,
         help="Number of GPUs to use for profiling",
     )
     parser.add_argument(
@@ -69,6 +69,13 @@ def parse_args():
     os.makedirs(args.output_dir, exist_ok=True)
 
     return args
+    
+
+
+      
+        
+
+         
 
 
 def profile_model(
